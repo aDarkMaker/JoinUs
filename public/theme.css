@@ -192,6 +192,26 @@ html {
 	margin-bottom: 30px;
 }
 
+.joinus-field.joinus-field-logic {
+	overflow: hidden;
+	max-height: 1200px;
+	opacity: 1;
+	transition:
+		max-height 0.35s ease,
+		opacity 0.35s ease,
+		margin 0.35s ease,
+		padding 0.35s ease;
+}
+.joinus-field.joinus-field-logic.joinus-field-hidden {
+	max-height: 0;
+	opacity: 0;
+	margin-top: 0;
+	margin-bottom: 0;
+	padding-top: 0;
+	padding-bottom: 0;
+	pointer-events: none;
+}
+
 .joinus-label {
 	display: flex;
 	align-items: center;
@@ -271,9 +291,17 @@ html {
 	box-shadow: 0 0 0 3px var(--joinus-primary-light);
 }
 
+.joinus-root input:not([type='hidden']):not(:placeholder-shown),
+.joinus-root textarea:not(:placeholder-shown) {
+	border-color: var(--joinus-primary);
+	background: #fff;
+}
+
 .joinus-input-wrap:has(input:focus) .joinus-input-icon,
+.joinus-input-wrap:not(.joinus-select-custom):has(input:not(:placeholder-shown)) .joinus-input-icon,
 .joinus-input-wrap:has(select:focus) .joinus-input-icon,
-.joinus-select-custom.is-open .joinus-input-icon {
+.joinus-select-custom.is-open .joinus-input-icon,
+.joinus-select-custom.has-value .joinus-input-icon {
 	color: var(--joinus-primary);
 }
 
@@ -308,6 +336,21 @@ html {
 	box-shadow: 0 0 0 3px var(--joinus-primary-light);
 }
 
+.joinus-select-custom.has-value .joinus-select-trigger {
+	border-color: var(--joinus-primary);
+	background: #fff;
+}
+
+.joinus-select-custom.has-value .joinus-input-icon,
+.joinus-select-custom.has-value .joinus-select-arrow {
+	color: var(--joinus-primary);
+}
+
+.joinus-field.has-value textarea {
+	border-color: var(--joinus-primary);
+	background: #fff;
+}
+
 .joinus-select-value {
 	flex: 1;
 	color: inherit;
@@ -325,7 +368,6 @@ html {
 	margin-left: 8px;
 	flex-shrink: 0;
 }
-.joinus-select-trigger:focus .joinus-select-arrow,
 .joinus-select-custom.is-open .joinus-select-arrow {
 	color: var(--joinus-primary);
 	transform: rotate(180deg);
@@ -402,13 +444,84 @@ html {
 	background: var(--joinus-primary-light);
 	color: var(--joinus-primary);
 }
+.joinus-file-wrap.joinus-file-dragover .joinus-file-trigger {
+	border-color: var(--joinus-primary);
+	background: var(--joinus-primary-light);
+	color: var(--joinus-primary);
+	border-style: solid;
+}
 .joinus-file-icon {
 	font-size: 24px;
 }
-.joinus-file-hint {
-	margin-top: 8px;
+.joinus-file-list {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+	margin-top: 12px;
+}
+.joinus-file-item {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 12px;
+	background: var(--joinus-input-bg);
+	border: 1px solid var(--joinus-border);
+	border-radius: var(--joinus-radius);
 	font-size: 14px;
+	position: relative;
+	isolation: isolate;
+}
+.joinus-file-preview {
+	width: 40px;
+	height: 40px;
+	border-radius: 6px;
+	overflow: hidden;
+	background: var(--joinus-border);
+	flex-shrink: 0;
+}
+.joinus-file-preview img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+.joinus-file-name {
+	flex: 1;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.joinus-file-remove {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 28px;
+	height: 28px;
+	min-width: 28px;
+	min-height: 28px;
+	padding: 0;
+	border: none;
+	background: transparent;
 	color: var(--joinus-text-muted);
+	cursor: pointer;
+	border-radius: 6px;
+	transition: color 0.2s, background 0.2s;
+	position: relative;
+	z-index: 10;
+	flex-shrink: 0;
+}
+.joinus-file-remove i {
+	pointer-events: none;
+	font-size: 18px;
+}
+.joinus-file-remove:hover,
+.joinus-file-remove:focus-visible {
+	color: #f5222d;
+	background: rgba(245, 34, 45, 0.08);
+}
+.joinus-file-remove:hover i,
+.joinus-file-remove:focus-visible i {
+	color: inherit;
 }
 
 .joinus-label.required .joinus-label-decor {

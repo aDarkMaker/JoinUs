@@ -1,14 +1,21 @@
+export interface ShowWhen {
+	questionId: string;
+	value: string | string[];
+}
+
 export interface Question {
 	id: string;
-	type: 'text' | 'tel' | 'email' | 'select' | 'textarea' | 'file';
+	type: 'input' | 'select' | 'textarea' | 'file' | 'boolean';
 	label: string;
 	required?: boolean;
 	placeholder?: string;
 	icon?: string;
+	inputType?: 'text' | 'tel' | 'email';
 	options?: string[];
 	rows?: number;
 	accept?: string;
 	multiple?: boolean;
+	showWhen?: ShowWhen;
 }
 
 export interface FormConfig {
@@ -24,7 +31,8 @@ const defaultQuestion: Partial<Question> = { required: false };
 
 function createField(q: Question): HTMLElement {
 	const field = document.createElement('div');
-	field.className = 'joinus-field';
+	field.className = 'joinus-field' + (q.showWhen ? ' joinus-field-logic' : '');
+	field.dataset.questionId = q.id;
 
 	const label = document.createElement('label');
 	label.className = 'joinus-label';
@@ -41,13 +49,11 @@ function createField(q: Question): HTMLElement {
 	const ph = q.placeholder ?? '';
 
 	switch (q.type) {
-		case 'text':
-		case 'tel':
-		case 'email': {
+		case 'input': {
 			const wrap = document.createElement('div');
 			wrap.className = 'joinus-input-wrap';
 			const input = document.createElement('input');
-			input.type = q.type;
+			input.type = q.inputType ?? 'text';
 			input.name = q.id;
 			input.placeholder = ph;
 			if (required) input.required = true;
@@ -90,12 +96,49 @@ function createField(q: Question): HTMLElement {
 			control = wrap;
 			break;
 		}
+		case 'boolean': {
+			const opts = q.options ?? ['是', '否'];
+			const wrap = document.createElement('div');
+			wrap.className = 'joinus-input-wrap joinus-select-custom';
+			wrap.dataset.select = '';
+			const hidden = document.createElement('input');
+			hidden.type = 'hidden';
+			hidden.name = q.id;
+			if (required) hidden.required = true;
+			const trigger = document.createElement('button');
+			trigger.type = 'button';
+			trigger.className = 'joinus-select-trigger';
+			trigger.setAttribute('aria-expanded', 'false');
+			trigger.setAttribute('aria-haspopup', 'listbox');
+			trigger.innerHTML = `<i class="${icon} joinus-input-icon"></i>
+				<span class="joinus-select-value placeholder">${ph || '请选择'}</span>
+				<i class="ri-arrow-down-s-line joinus-select-arrow"></i>`;
+			const dropdown = document.createElement('div');
+			dropdown.className = 'joinus-select-dropdown';
+			dropdown.setAttribute('role', 'listbox');
+			opts.forEach((o, i) => {
+				const div = document.createElement('div');
+				div.className = 'joinus-select-option';
+				div.setAttribute('data-value', String(i));
+				div.setAttribute('role', 'option');
+				div.textContent = o;
+				dropdown.appendChild(div);
+			});
+			wrap.appendChild(hidden);
+			wrap.appendChild(trigger);
+			wrap.appendChild(dropdown);
+			control = wrap;
+			break;
+		}
 		case 'textarea': {
 			const ta = document.createElement('textarea');
 			ta.name = q.id;
 			ta.placeholder = ph;
 			ta.rows = q.rows ?? 5;
 			if (required) ta.required = true;
+			const syncFilled = () => field.classList.toggle('has-value', !!ta.value.trim());
+			ta.addEventListener('input', syncFilled);
+			ta.addEventListener('change', syncFilled);
 			control = ta;
 			break;
 		}
@@ -104,21 +147,22 @@ function createField(q: Question): HTMLElement {
 			wrap.className = 'joinus-file-wrap';
 			const input = document.createElement('input');
 			input.type = 'file';
-			input.name = q.id;
 			input.accept = q.accept ?? '*';
-			if (q.multiple) input.multiple = true;
-			if (required) input.required = true;
-			const btn = document.createElement('label');
-			btn.className = 'joinus-file-trigger';
-			btn.innerHTML = `<i class="${icon} joinus-file-icon"></i>
-				<span class="joinus-file-text">${ph}</span>`;
-			btn.htmlFor = input.id || `joinus-file-${q.id}`;
+			input.multiple = true;
 			if (!input.id) input.id = `joinus-file-${q.id}`;
-			const hint = document.createElement('div');
-			hint.className = 'joinus-file-hint';
+			const trigger = document.createElement('label');
+			trigger.className = 'joinus-file-trigger';
+			trigger.innerHTML = `<i class="${icon} joinus-file-icon"></i>
+				<span class="joinus-file-text">${ph}</span>`;
+			trigger.htmlFor = input.id;
+			const list = document.createElement('div');
+			list.className = 'joinus-file-list';
 			wrap.appendChild(input);
-			wrap.appendChild(btn);
-			wrap.appendChild(hint);
+			wrap.appendChild(trigger);
+			wrap.appendChild(list);
+			wrap.dataset.name = q.id;
+			if (required) wrap.dataset.required = 'true';
+			(wrap as unknown as FileWrapEl)._files = [];
 			control = wrap;
 			break;
 		}
@@ -150,31 +194,180 @@ function initSelect(wrap: HTMLElement): void {
 			hidden.value = text;
 			valueEl.textContent = text;
 			valueEl.classList.remove('placeholder');
+			wrap.classList.add('has-value');
 			wrap.classList.remove('is-open');
 			hidden.dispatchEvent(new Event('change', { bubbles: true }));
 		});
 	});
 
 	document.addEventListener('click', (e) => {
-		if (!wrap.contains(e.target as Node)) wrap.classList.remove('is-open');
+		if (!wrap.contains(e.target as Node)) {
+			wrap.classList.remove('is-open');
+			(trigger as HTMLElement).blur();
+		}
+	});
+}
+
+interface FileWrapEl extends HTMLElement {
+	_files: File[];
+	_urls?: Map<File, string>;
+}
+
+function getOrCreateUrl(wrap: FileWrapEl, file: File): string {
+	if (!wrap._urls) wrap._urls = new Map();
+	let u = wrap._urls.get(file);
+	if (!u && file.type.startsWith('image/')) {
+		u = URL.createObjectURL(file);
+		wrap._urls.set(file, u);
+	}
+	return u ?? '';
+}
+
+function renderFileList(wrap: FileWrapEl): void {
+	const list = wrap.querySelector('.joinus-file-list');
+	const files = wrap._files;
+	if (!list) return;
+
+	list.innerHTML = '';
+	files.forEach((file, i) => {
+		const item = document.createElement('div');
+		item.className = 'joinus-file-item';
+		const url = getOrCreateUrl(wrap, file);
+		if (url) {
+			const img = document.createElement('div');
+			img.className = 'joinus-file-preview';
+			const imgEl = document.createElement('img');
+			imgEl.src = url;
+			imgEl.alt = file.name;
+			img.appendChild(imgEl);
+			item.appendChild(img);
+		}
+		const name = document.createElement('span');
+		name.className = 'joinus-file-name';
+		name.textContent = file.name;
+		item.appendChild(name);
+		const remove = document.createElement('button');
+		remove.type = 'button';
+		remove.className = 'joinus-file-remove';
+		remove.setAttribute('aria-label', '删除');
+		remove.innerHTML = '<i class="ri-close-line"></i>';
+		remove.addEventListener('click', () => {
+			const u = wrap._urls?.get(file);
+			if (u) {
+				URL.revokeObjectURL(u);
+				wrap._urls?.delete(file);
+			}
+			files.splice(i, 1);
+			renderFileList(wrap);
+		});
+		item.appendChild(remove);
+		list.appendChild(item);
+	});
+
+	wrap.classList.toggle('has-value', files.length > 0);
+}
+
+function setFieldRequired(field: HTMLElement, questionId: string, required: boolean): void {
+	const input = field.querySelector<HTMLInputElement>(`input[name="${questionId}"], textarea[name="${questionId}"]`);
+	if (input) input.required = required;
+	const hidden = field.querySelector<HTMLInputElement>(`input[type="hidden"][name="${questionId}"]`);
+	if (hidden) hidden.required = required;
+	const fileWrap = field.querySelector<HTMLElement>(`.joinus-file-wrap[data-name="${questionId}"]`);
+	if (fileWrap) fileWrap.dataset.required = required ? 'true' : '';
+}
+
+function clearField(field: HTMLElement, q: Question): void {
+	const name = q.id;
+	const input = field.querySelector<HTMLInputElement>(`input[name="${name}"]:not([type="hidden"]):not([type="file"])`);
+	if (input) input.value = '';
+	const textarea = field.querySelector<HTMLTextAreaElement>(`textarea[name="${name}"]`);
+	if (textarea) textarea.value = '';
+	const hidden = field.querySelector<HTMLInputElement>(`input[type="hidden"][name="${name}"]`);
+	if (hidden) {
+		hidden.value = '';
+		const wrap = hidden.closest('.joinus-select-custom');
+		if (wrap) {
+			const valueEl = wrap.querySelector('.joinus-select-value');
+			if (valueEl) {
+				valueEl.textContent = q.placeholder || '请选择';
+				valueEl.classList.add('placeholder');
+			}
+			wrap.classList.remove('has-value');
+		}
+	}
+	const fileWrap = field.querySelector('.joinus-file-wrap[data-name="' + name + '"]') as unknown as FileWrapEl | null;
+	if (fileWrap?._files) {
+		fileWrap._urls?.forEach((u) => URL.revokeObjectURL(u));
+		fileWrap._urls?.clear();
+		fileWrap._files.length = 0;
+		renderFileList(fileWrap);
+	}
+	field.classList.remove('has-value');
+}
+
+function initLogicConditions(form: HTMLFormElement, config: FormConfig): void {
+	const fields = form.querySelectorAll<HTMLElement>('.joinus-field');
+	config.questions.forEach((q, i) => {
+		if (!q.showWhen) return;
+		const field = fields[i];
+		if (!field) return;
+		const refId = q.showWhen.questionId;
+		const values = Array.isArray(q.showWhen.value) ? q.showWhen.value : [q.showWhen.value];
+		const getRefValue = (): string => {
+			const el = form.querySelector(`[name="${refId}"]`);
+			return (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) ? el.value : '';
+		};
+		const show = (): void => {
+			field.classList.remove('joinus-field-hidden');
+			setFieldRequired(field, q.id, q.required ?? false);
+		};
+		const hide = (): void => {
+			field.classList.add('joinus-field-hidden');
+			setFieldRequired(field, q.id, false);
+			clearField(field, q);
+		};
+		const updateVisibility = (): void => {
+			if (values.includes(getRefValue())) show();
+			else hide();
+		};
+		updateVisibility();
+		const refEl = form.querySelector(`[name="${refId}"]`);
+		if (refEl) {
+			refEl.addEventListener('change', updateVisibility);
+			refEl.addEventListener('input', updateVisibility);
+		}
 	});
 }
 
 function initFile(wrap: HTMLElement): void {
+	const w = wrap as unknown as FileWrapEl;
 	const input = wrap.querySelector<HTMLInputElement>('input[type="file"]');
-	const hint = wrap.querySelector('.joinus-file-hint');
-	if (!input || !hint) return;
+	const files = w._files;
+	if (!input || !files) return;
 
-	input.addEventListener('change', () => {
-		const files = input.files;
-		if (!files?.length) {
-			hint.textContent = '点击选择文件';
-			return;
-		}
-		const names = Array.from(files)
-			.map((f) => f.name)
-			.join(', ');
-		hint.textContent = names.length > 40 ? names.slice(0, 40) + '...' : names;
+	const addFiles = (fileList: FileList | null) => {
+		if (!fileList?.length) return;
+		Array.from(fileList).forEach((f) => files.push(f));
+		renderFileList(w);
+		input.value = '';
+	};
+
+	input.addEventListener('change', () => addFiles(input.files));
+
+	wrap.addEventListener('dragover', (e) => {
+		e.preventDefault();
+		e.stopPropagation();
+		wrap.classList.add('joinus-file-dragover');
+	});
+	wrap.addEventListener('dragleave', (e) => {
+		e.preventDefault();
+		if (!wrap.contains(e.relatedTarget as Node)) wrap.classList.remove('joinus-file-dragover');
+	});
+	wrap.addEventListener('drop', (e) => {
+		e.preventDefault();
+		e.stopPropagation();
+		wrap.classList.remove('joinus-file-dragover');
+		addFiles(e.dataTransfer?.files ?? null);
 	});
 }
 
@@ -196,14 +389,41 @@ export function renderForm(container: HTMLElement, config: FormConfig): void {
 		if (fileWrap) initFile(fileWrap);
 	}
 
+	initLogicConditions(form, config);
+
 	const btn = document.createElement('button');
 	btn.type = 'submit';
 	btn.className = 'joinus-btn';
 	btn.innerHTML = `<span>${config.submit?.label ?? '立即提交'}</span><i class="ri-arrow-right-line"></i>`;
 	form.appendChild(btn);
 
-	form.addEventListener('submit', async () => {
-		const data = new FormData(form);
+	form.addEventListener('submit', async (e) => {
+		const fileWraps = Array.from(form.querySelectorAll('.joinus-file-wrap[data-required="true"]')) as unknown as FileWrapEl[];
+		for (const w of fileWraps) {
+			if (!w._files?.length) {
+				alert('请上传必填的附件');
+				return;
+			}
+		}
+		const data = new FormData();
+		for (const el of Array.from(form.elements)) {
+			if (el instanceof HTMLInputElement && el.type === 'file') continue;
+			if (el instanceof HTMLInputElement && el.name && el.type !== 'hidden') {
+				data.append(el.name, el.value);
+			} else if (el instanceof HTMLInputElement && el.name && el.type === 'hidden') {
+				data.append(el.name, el.value);
+			} else if (el instanceof HTMLSelectElement && el.name) {
+				data.append(el.name, el.value);
+			} else if (el instanceof HTMLTextAreaElement && el.name) {
+				data.append(el.name, el.value);
+			}
+		}
+		Array.from(form.querySelectorAll('.joinus-file-wrap')).forEach((wrap) => {
+			const w = wrap as unknown as FileWrapEl;
+			const name = w.dataset.name;
+			const files = w._files;
+			if (name && files?.length) files.forEach((f) => data.append(name, f));
+		});
 		const url = config.submit?.url;
 		if (url) {
 			try {

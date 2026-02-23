@@ -6,7 +6,8 @@
 	"questions": [
 		{
 			"id": "name",
-			"type": "text",
+			"type": "input",
+			"inputType": "text",
 			"label": "姓名",
 			"required": true,
 			"placeholder": "请输入您的真实姓名",
@@ -14,19 +15,21 @@
 		},
 		{
 			"id": "contact",
-			"type": "tel",
+			"type": "input",
+			"inputType": "tel",
 			"label": "联系方式",
 			"required": true,
 			"placeholder": "请输入您的手机号码",
 			"icon": "ri-smartphone-line"
 		},
 		{
-			"id": "email",
-			"type": "email",
-			"label": "电子邮箱",
+			"id": "qq",
+			"type": "input",
+			"inputType": "text",
+			"label": "QQ号",
 			"required": true,
-			"placeholder": "请输入您的常用邮箱",
-			"icon": "ri-mail-line"
+			"placeholder": "请输入您的QQ号",
+			"icon": "ri-qq-line"
 		},
 		{
 			"id": "department",
@@ -35,7 +38,73 @@
 			"required": true,
 			"placeholder": "请选择您感兴趣的部门",
 			"icon": "ri-team-line",
-			"options": ["视频组", "美术组", "直播组", "文案组", "切片组", "技术组"]
+			"options": ["中之人", "视频组", "美术组", "直播组", "文案组", "切片组", "技术组"]
+		},
+		{
+			"id": "student",
+			"type": "boolean",
+			"label": "是否为在校生",
+			"required": true,
+			"placeholder": "请选择",
+			"icon": "ri-school-line"
+		},
+		{
+			"id": "college",
+			"type": "input",
+			"inputType": "text",
+			"label": "学院",
+			"required": true,
+			"placeholder": "请输入您的学院",
+			"icon": "ri-building-line",
+			"showWhen": { "questionId": "student", "value": "是" }
+		},
+		{
+			"id": "grade",
+			"type": "input",
+			"inputType": "text",
+			"label": "年级",
+			"required": true,
+			"placeholder": "请输入您的年级",
+			"icon": "ri-calendar-line",
+			"showWhen": { "questionId": "student", "value": "是" }
+		},
+		{
+			"id": "offline_interview",
+			"type": "boolean",
+			"label": "是否线下面试",
+			"required": true,
+			"placeholder": "请选择",
+			"icon": "ri-group-line",
+			"showWhen": { "questionId": "student", "value": "是" }
+		},
+		{
+			"id": "interview_time_offline",
+			"type": "select",
+			"label": "可以的面试时间",
+			"required": true,
+			"placeholder": "请选择面试时间",
+			"icon": "ri-time-line",
+			"options": ["3月14号上午", "3月14号下午"],
+			"showWhen": { "questionId": "student", "value": "是" }
+		},
+		{
+			"id": "online_interview",
+			"type": "boolean",
+			"label": "是否参加线上面试",
+			"required": true,
+			"placeholder": "请选择",
+			"icon": "ri-video-line",
+			"showWhen": { "questionId": "student", "value": "否" }
+		},
+		{
+			"id": "interview_time_online",
+			"type": "select",
+			"label": "面试时间",
+			"required": true,
+			"placeholder": "请选择面试时间",
+			"icon": "ri-time-line",
+			"options": ["3月14号上午", "3月14号下午"],
+			"showWhen": { "questionId": "student", "value": "否" }
 		},
 		{
 			"id": "intro",
