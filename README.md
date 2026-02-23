@@ -1,16 +1,18 @@
 # JoinUs
 
-一款轻量化的多端招新报名界面，可轻松挂载到网页，支持高度自定义问题、答案及界面配置。
+轻量化多端招新报名界面，支持挂载至网页，可自定义题目、选项及界面配置。
 
 ## 题型
 
-- **填空** (input)：姓名、联系方式、电子邮箱等
-- **选择** (select)：意向部门
-- **判断题** (boolean)：是/否，默认选项为「是」「否」，可用 `options` 自定义
-- **描述** (textarea)：个人简介
-- **附件** (file)：个人作品，不限制大小
+- **填空** (input)：适用于姓名、联系方式、电子邮箱等
+- **选择** (select)：适用于意向部门等单选场景
+- **判断题** (boolean)：是/否，默认选项为「是」「否」，可通过 `options` 自定义
+- **描述** (textarea)：适用于个人简介等长文本
+- **附件** (file)：适用于个人作品等文件上传，不限制大小
 
-**逻辑题目**：任一题目可加 `showWhen`，根据前一题答案决定是否显示。例如 `"showWhen": { "questionId": "student", "value": "是" }` 表示仅当 id 为 student 的题目答案为「是」时显示；`value` 可为字符串或数组（满足其一即显示）。
+### 逻辑题目
+
+可为题目配置 `showWhen`，根据指定题目答案控制本题是否显示。例如 `"showWhen": { "questionId": "student", "value": "是" }` 表示仅当 id 为 student 的题目答案为「是」时显示本题；`value` 可为字符串或数组，满足其一即显示。
 
 ## 配置 (form.json)
 
@@ -41,4 +43,6 @@
 }
 ```
 
-所有题目标题、placeholder、required 等均可配置。提交成功后会出现过渡动画并展示成功页；成功页主标题、副标题、小字、返回按钮文案及返回链接均可通过 `submit` 下的 `successTitle`、`successSubtitle`、`successNote`、`successBackUrl`、`successBackLabel` 自定义。
+题目标题、placeholder、required 等字段均支持配置<br />
+提交成功后将展示过渡动画及成功页<br />
+成功页的主标题、副标题、说明文字、返回按钮文案及返回链接可通过 `submit` 下的 `successTitle`、`successSubtitle`、`successNote`、`successBackUrl`、`successBackLabel` 进行配置
