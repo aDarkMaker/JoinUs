@@ -214,13 +214,6 @@ export function renderForm(container: HTMLElement, config: FormConfig): void {
 				alert('提交失败: ' + (e instanceof Error ? e.message : String(e)));
 			}
 		} else {
-			const obj: Record<string, unknown> = {};
-			data.forEach((v, k) => {
-				if (obj[k] === undefined) obj[k] = v;
-				else if (Array.isArray(obj[k])) (obj[k] as unknown[]).push(v);
-				else obj[k] = [obj[k], v];
-			});
-			console.log('form data:', obj);
 			alert(config.submit?.successMessage ?? '提交成功');
 		}
 	});

@@ -1,6 +1,5 @@
 {
 	"name": "joinus",
-	"module": "index.ts",
 	"type": "module",
 	"private": true,
 	"scripts": {
@@ -17,6 +16,7 @@
 	},
 	"dependencies": {
 		"cspell": "^9.6.4",
-		"prettier": "^3.8.1"
+		"prettier": "^3.8.1",
+		"remixicon": "^4.9.1"
 	}
 }
