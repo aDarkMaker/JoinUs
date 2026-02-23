@@ -1,0 +1,4 @@
+{
+	"words": ["joinus"],
+	"ignorePaths": ["node_modules", "dist", "build", "public", "src", "test", "coverage"]
+}
