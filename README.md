@@ -28,8 +28,17 @@
 		{ "id": "intro", "type": "textarea", "label": "个人简介", "required": false, "rows": 5 },
 		{ "id": "portfolio", "type": "file", "label": "个人作品", "required": false, "accept": "*", "multiple": true }
 	],
-	"submit": { "label": "立即提交", "successMessage": "报名成功", "url": "" }
+	"submit": {
+		"label": "立即提交",
+		"successMessage": "报名成功",
+		"url": "",
+		"successTitle": "真是个明智的选择！",
+		"successSubtitle": "期待我们的相遇",
+		"successNote": "注意查收短信，不要错过哦",
+		"successBackUrl": "https://huaxiaoke.com",
+		"successBackLabel": "返回"
+	}
 }
 ```
 
-所有题目标题、placeholder、required 等均可配置。
+所有题目标题、placeholder、required 等均可配置。提交成功后会出现过渡动画并展示成功页；成功页主标题、副标题、小字、返回按钮文案及返回链接均可通过 `submit` 下的 `successTitle`、`successSubtitle`、`successNote`、`successBackUrl`、`successBackLabel` 自定义。

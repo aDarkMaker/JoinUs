@@ -24,7 +24,16 @@ export interface FormConfig {
 	welcome?: string;
 	theme?: string;
 	questions: Question[];
-	submit?: { label?: string; successMessage?: string; url?: string };
+	submit?: {
+		label?: string;
+		successMessage?: string;
+		url?: string;
+		successTitle?: string;
+		successSubtitle?: string;
+		successNote?: string;
+		successBackUrl?: string;
+		successBackLabel?: string;
+	};
 }
 
 const defaultQuestion: Partial<Question> = { required: false };
@@ -397,6 +406,16 @@ export function renderForm(container: HTMLElement, config: FormConfig): void {
 	btn.innerHTML = `<span>${config.submit?.label ?? '立即提交'}</span><i class="ri-arrow-right-line"></i>`;
 	form.appendChild(btn);
 
+	const successEl = document.createElement('div');
+	successEl.className = 'joinus-success joinus-success-hidden';
+	const s = config.submit ?? {};
+	successEl.innerHTML = `
+		<h2 class="joinus-success-title">${escapeHtml(s.successTitle ?? '真是个明智的选择！')}</h2>
+		<p class="joinus-success-subtitle">${escapeHtml(s.successSubtitle ?? '期待我们的相遇')}</p>
+		<p class="joinus-success-note">${escapeHtml(s.successNote ?? '注意查收短信，不要错过哦')}</p>
+		<a href="${escapeHtml(s.successBackUrl ?? 'https://huaxiaoke.com')}" class="joinus-btn joinus-success-back">${escapeHtml(s.successBackLabel ?? '返回')}</a>
+	`;
+
 	form.addEventListener('submit', async (e) => {
 		const fileWraps = Array.from(form.querySelectorAll('.joinus-file-wrap[data-required="true"]')) as unknown as FileWrapEl[];
 		for (const w of fileWraps) {
@@ -425,18 +444,35 @@ export function renderForm(container: HTMLElement, config: FormConfig): void {
 			if (name && files?.length) files.forEach((f) => data.append(name, f));
 		});
 		const url = config.submit?.url;
+		let ok = false;
 		if (url) {
 			try {
 				const r = await fetch(url, { method: 'POST', body: data });
-				if (r.ok) alert(config.submit?.successMessage ?? '提交成功');
-				else throw new Error(String(r.status));
+				ok = r.ok;
+				if (!r.ok) throw new Error(String(r.status));
 			} catch (e) {
 				alert('提交失败: ' + (e instanceof Error ? e.message : String(e)));
+				return;
 			}
 		} else {
-			alert(config.submit?.successMessage ?? '提交成功');
+			ok = true;
 		}
+		if (!ok) return;
+		form.classList.add('joinus-form-submitting');
+		const duration = 400;
+		setTimeout(() => {
+			form.style.display = 'none';
+			successEl.classList.remove('joinus-success-hidden');
+			requestAnimationFrame(() => successEl.classList.add('joinus-success-visible'));
+		}, duration);
 	});
 
 	container.appendChild(form);
+	container.appendChild(successEl);
+}
+
+function escapeHtml(s: string): string {
+	const div = document.createElement('div');
+	div.textContent = s;
+	return div.innerHTML;
 }
