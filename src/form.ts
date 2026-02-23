@@ -324,7 +324,7 @@ function initLogicConditions(form: HTMLFormElement, config: FormConfig): void {
 		const values = Array.isArray(q.showWhen.value) ? q.showWhen.value : [q.showWhen.value];
 		const getRefValue = (): string => {
 			const el = form.querySelector(`[name="${refId}"]`);
-			return (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) ? el.value : '';
+			return el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement ? el.value : '';
 		};
 		const show = (): void => {
 			field.classList.remove('joinus-field-hidden');

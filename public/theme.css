@@ -507,7 +507,9 @@ html {
 	color: var(--joinus-text-muted);
 	cursor: pointer;
 	border-radius: 6px;
-	transition: color 0.2s, background 0.2s;
+	transition:
+		color 0.2s,
+		background 0.2s;
 	position: relative;
 	z-index: 10;
 	flex-shrink: 0;
@@ -567,7 +569,9 @@ html {
 
 /* submit animation: form exits */
 .joinus-card form {
-	transition: opacity 0.35s ease, transform 0.35s ease;
+	transition:
+		opacity 0.35s ease,
+		transform 0.35s ease;
 }
 .joinus-card form.joinus-form-submitting {
 	opacity: 0;
@@ -581,7 +585,9 @@ html {
 	padding: 24px 0 0;
 	opacity: 0;
 	transform: translateY(12px);
-	transition: opacity 0.4s ease, transform 0.4s ease;
+	transition:
+		opacity 0.4s ease,
+		transform 0.4s ease;
 }
 .joinus-success.joinus-success-hidden {
 	position: absolute;
