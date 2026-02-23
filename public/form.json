@@ -1,0 +1,64 @@
+{
+	"title": "加入我们",
+	"subtitle": "JOIN US",
+	"welcome": "如果你喜欢华小科Official……\n或者只是希望给大学生活增添一份色彩……\n加入我们吧！\n我们会尽力做到不负所望！",
+	"theme": "yellow",
+	"questions": [
+		{
+			"id": "name",
+			"type": "text",
+			"label": "姓名",
+			"required": true,
+			"placeholder": "请输入您的真实姓名",
+			"icon": "ri-user-smile-line"
+		},
+		{
+			"id": "contact",
+			"type": "tel",
+			"label": "联系方式",
+			"required": true,
+			"placeholder": "请输入您的手机号码",
+			"icon": "ri-smartphone-line"
+		},
+		{
+			"id": "email",
+			"type": "email",
+			"label": "电子邮箱",
+			"required": true,
+			"placeholder": "请输入您的常用邮箱",
+			"icon": "ri-mail-line"
+		},
+		{
+			"id": "department",
+			"type": "select",
+			"label": "意向部门",
+			"required": true,
+			"placeholder": "请选择您感兴趣的部门",
+			"icon": "ri-team-line",
+			"options": ["技术部 (Technology Dept.)", "设计部 (Design Dept.)", "运营部 (Operation Dept.)", "市场部 (Marketing Dept.)"]
+		},
+		{
+			"id": "intro",
+			"type": "textarea",
+			"label": "个人简介",
+			"required": false,
+			"placeholder": "简单介绍一下你自己，让我们更快了解你！",
+			"rows": 5
+		},
+		{
+			"id": "portfolio",
+			"type": "file",
+			"label": "个人作品",
+			"required": false,
+			"placeholder": "上传附件",
+			"icon": "ri-upload-cloud-line",
+			"accept": "*",
+			"multiple": true
+		}
+	],
+	"submit": {
+		"label": "立即提交",
+		"successMessage": "报名成功",
+		"url": ""
+	}
+}
