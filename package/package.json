@@ -1,6 +1,6 @@
 {
 	"name": "@orangelan/joinus-form",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"description": "轻量招新报名表单组件 - 支持多端、自定义配置、文件上传",
 	"type": "module",
 	"main": "./dist/joinus.js",
