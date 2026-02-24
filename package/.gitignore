@@ -19,6 +19,7 @@ server/data/
 .env
 .env.local
 .env.*.local
+.npmrc
 
 # Logs
 logs/
@@ -64,5 +65,3 @@ coverage/
 *.temp
 .temp/
 tmp/
-
-.npmrc
