@@ -380,7 +380,11 @@ function initFile(wrap: HTMLElement): void {
 	});
 }
 
-export function renderForm(container: HTMLElement, config: FormConfig): void {
+export function renderForm(container: HTMLElement | string, config: FormConfig): void {
+	const el = typeof container === 'string' ? document.querySelector(container) : container;
+	if (!(el instanceof HTMLElement)) {
+		throw new Error('renderForm: container must be a valid HTMLElement or CSS selector string');
+	}
 	const form = document.createElement('form');
 	form.action = config.submit?.url ?? '#';
 	form.method = 'POST';
@@ -501,7 +505,7 @@ export function renderForm(container: HTMLElement, config: FormConfig): void {
 				alert('提交失败: ' + (e instanceof Error ? e.message : String(e)));
 			}
 		});
-		const root = container.closest('.joinus-root') ?? document.body;
+		const root = el?.closest('.joinus-root') ?? document.body;
 		root.appendChild(overlay);
 		requestAnimationFrame(() => overlay.classList.add('joinus-modal-visible'));
 	}
@@ -539,8 +543,8 @@ export function renderForm(container: HTMLElement, config: FormConfig): void {
 		showSuccess();
 	});
 
-	container.appendChild(form);
-	container.appendChild(successEl);
+	el.appendChild(form);
+	el.appendChild(successEl);
 }
 
 function escapeHtml(s: string): string {
