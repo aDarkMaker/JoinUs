@@ -46,3 +46,25 @@
 题目标题、placeholder、required 等字段均支持配置<br />
 提交成功后将展示过渡动画及成功页<br />
 成功页的主标题、副标题、说明文字、返回按钮文案及返回链接可通过 `submit` 下的 `successTitle`、`successSubtitle`、`successNote`、`successBackUrl`、`successBackLabel` 进行配置
+
+## 后端与导出
+
+项目自带简易后端，用于接收表单提交并将所有报名数据导出。
+
+### 启动方式
+
+1. **前端**：`bun run dev`（Vite 开发服务器，默认将 `/api` 代理到后端）
+2. **后端**：另开终端执行 `bun run server`
+
+后端默认使用端口 3001；若被占用会依次尝试 3002、3003…，启动时会在控制台打印实际端口。若后端跑在非 3001 端口，前端需指定代理目标，例如：`BACKEND_PORT=3002 bun run dev`。
+
+在 `form.json` 中设置 `submit.url` 为 `"/api/submit"` 即可将表单提交到本地后端（通过 Vite 代理）。
+
+### 接口说明
+
+| 方法 | 路径          | 说明                                                                                                                     |
+| ---- | ------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| POST | `/api/submit` | 接收表单提交 |
+| GET  | `/api/export` | 下载一个总压缩包（`.zip`）：包含 `报名表.xlsx` 以及附件压缩包
+
+浏览器访问 `http://localhost:5173/api/export`（经 Vite 代理）或 `http://localhost:<后端实际端口>/api/export` 即可下载导出压缩包。

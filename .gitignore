@@ -3,6 +3,9 @@ node_modules/
 
 # Build output
 dist/
+
+# Backend storage
+server/data/
 *.local
 
 # Bun
@@ -52,6 +55,9 @@ coverage/
 .turbo/
 .eslintcache
 *.tsbuildinfo
+
+# 后端端口缓存，供前端 dev 自动匹配（先启后端再启前端）
+.backend-port
 
 # Optional: 本地调试/临时文件
 *.tmp

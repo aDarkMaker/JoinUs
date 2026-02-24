@@ -416,14 +416,18 @@ export function renderForm(container: HTMLElement, config: FormConfig): void {
 		<a href="${escapeHtml(s.successBackUrl ?? 'https://huaxiaoke.com')}" class="joinus-btn joinus-success-back">${escapeHtml(s.successBackLabel ?? '返回')}</a>
 	`;
 
-	form.addEventListener('submit', async (e) => {
-		const fileWraps = Array.from(form.querySelectorAll('.joinus-file-wrap[data-required="true"]')) as unknown as FileWrapEl[];
-		for (const w of fileWraps) {
-			if (!w._files?.length) {
-				alert('请上传必填的附件');
-				return;
-			}
+	function getSubmitUrl(): string | undefined {
+		const base = config.submit?.url;
+		if (!base) return undefined;
+		const env = import.meta.env as { DEV?: boolean; VITE_BACKEND_PORT?: string };
+		if (env.DEV && base.startsWith('/')) {
+			const port = env.VITE_BACKEND_PORT || '3001';
+			return `http://localhost:${port}${base}`;
 		}
+		return base;
+	}
+
+	function buildFormData(): FormData {
 		const data = new FormData();
 		for (const el of Array.from(form.elements)) {
 			if (el instanceof HTMLInputElement && el.type === 'file') continue;
@@ -443,21 +447,10 @@ export function renderForm(container: HTMLElement, config: FormConfig): void {
 			const files = w._files;
 			if (name && files?.length) files.forEach((f) => data.append(name, f));
 		});
-		const url = config.submit?.url;
-		let ok = false;
-		if (url) {
-			try {
-				const r = await fetch(url, { method: 'POST', body: data });
-				ok = r.ok;
-				if (!r.ok) throw new Error(String(r.status));
-			} catch (e) {
-				alert('提交失败: ' + (e instanceof Error ? e.message : String(e)));
-				return;
-			}
-		} else {
-			ok = true;
-		}
-		if (!ok) return;
+		return data;
+	}
+
+	function showSuccess(): void {
 		form.classList.add('joinus-form-submitting');
 		const duration = 400;
 		setTimeout(() => {
@@ -465,6 +458,85 @@ export function renderForm(container: HTMLElement, config: FormConfig): void {
 			successEl.classList.remove('joinus-success-hidden');
 			requestAnimationFrame(() => successEl.classList.add('joinus-success-visible'));
 		}, duration);
+	}
+
+	function showOverwriteModal(firstSubmitData: FormData): void {
+		const overlay = document.createElement('div');
+		overlay.className = 'joinus-modal-overlay';
+		overlay.setAttribute('role', 'dialog');
+		overlay.setAttribute('aria-modal', 'true');
+		overlay.innerHTML = `
+			<div class="joinus-modal-card">
+				<h2 class="joinus-modal-title">你已经提交过了</h2>
+				<p class="joinus-modal-subtitle">是否覆盖之前的提交</p>
+				<div class="joinus-modal-actions">
+					<button type="button" class="joinus-btn joinus-btn-secondary joinus-modal-cancel">取消提交</button>
+					<button type="button" class="joinus-btn joinus-modal-overwrite">确定覆盖</button>
+				</div>
+			</div>
+		`;
+		const close = () => {
+			overlay.classList.remove('joinus-modal-visible');
+			setTimeout(() => overlay.remove(), 300);
+		};
+		overlay.querySelector('.joinus-modal-cancel')?.addEventListener('click', close);
+		overlay.querySelector('.joinus-modal-overwrite')?.addEventListener('click', async () => {
+			close();
+			// 复用首次提交的 FormData，保证服务端查重能命中同一人
+			const data = new FormData();
+			for (const [key, value] of firstSubmitData.entries()) {
+				data.append(key, value);
+			}
+			data.append('overwrite', '1');
+			const url = getSubmitUrl();
+			if (!url) return;
+			try {
+				const r = await fetch(url, { method: 'POST', body: data });
+				const json = (await r.json().catch(() => ({}))) as { ok?: boolean };
+				console.log('[JoinUs] overwrite', { status: r.status, ok: r.ok, json });
+				if (r.ok && json.ok) showSuccess();
+				else alert('提交失败');
+			} catch (e) {
+				console.error('[JoinUs] overwrite error', e);
+				alert('提交失败: ' + (e instanceof Error ? e.message : String(e)));
+			}
+		});
+		const root = container.closest('.joinus-root') ?? document.body;
+		root.appendChild(overlay);
+		requestAnimationFrame(() => overlay.classList.add('joinus-modal-visible'));
+	}
+
+	form.addEventListener('submit', async (e) => {
+		e.preventDefault();
+		const fileWraps = Array.from(form.querySelectorAll('.joinus-file-wrap[data-required="true"]')) as unknown as FileWrapEl[];
+		for (const w of fileWraps) {
+			if (!w._files?.length) {
+				alert('请上传必填的附件');
+				return;
+			}
+		}
+		const data = buildFormData();
+		const url = getSubmitUrl();
+		if (url) {
+			try {
+				const r = await fetch(url, { method: 'POST', body: data });
+				const json = (await r.json().catch(() => ({}))) as { ok?: boolean; duplicate?: boolean };
+				console.log('[JoinUs] submit', { status: r.status, ok: r.ok, json, xDuplicate: r.headers.get('X-Duplicate') });
+				if (r.status === 409 || r.headers.get('X-Duplicate') === 'true' || json.duplicate) {
+					showOverwriteModal(data);
+					return;
+				}
+				if (!r.ok || !json.ok) {
+					alert('提交失败');
+					return;
+				}
+			} catch (e) {
+				console.error('[JoinUs] submit error', e);
+				alert('提交失败: ' + (e instanceof Error ? e.message : String(e)));
+				return;
+			}
+		}
+		showSuccess();
 	});
 
 	container.appendChild(form);
