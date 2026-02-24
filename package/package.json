@@ -1,6 +1,6 @@
 {
 	"name": "@orangelan/joinus-form",
-	"version": "1.0.1",
+	"version": "1.0.8",
 	"description": "轻量招新报名表单组件 - 支持多端、自定义配置、文件上传",
 	"type": "module",
 	"main": "./dist/joinus.js",
@@ -54,12 +54,13 @@
 	"license": "MIT",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/huaxiaoke/joinus.git"
+		"url": "https://github.com/aDarkMaker/JoinUs.git",
+		"directory": "package"
 	},
 	"bugs": {
-		"url": "https://github.com/huaxiaoke/joinus/issues"
+		"url": "https://github.com/aDarkMaker/JoinUs/issues"
 	},
-	"homepage": "https://github.com/huaxiaoke/joinus#readme",
+	"homepage": "https://github.com/aDarkMaker/JoinUs/tree/main/package#readme",
 	"engines": {
 		"bun": ">=1.0.0",
 		"node": ">=18.0.0"

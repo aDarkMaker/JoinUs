@@ -1,5 +1,18 @@
-{
-	"title": "加入我们",
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JoinUs Form Test</title>
+</head>
+<body>
+  <div id="app"></div>
+
+  <script type="module">
+    import { renderForm } from 'https://unpkg.com/@orangelan/joinus-form@latest/dist/joinus.mjs';
+
+    renderForm('#app', {
+      "title": "加入我们",
 	"subtitle": "JOIN US",
 	"welcome": "如果你喜欢华小科Official……\n或者只是希望给大学生活增添一份色彩……\n加入我们吧！\n我们会尽力做到不负所望！",
 	"theme": "yellow",
@@ -135,4 +148,7 @@
 		"successBackUrl": "https://huaxiaoke.com",
 		"successBackLabel": "返回"
 	}
-}
+    });
+  </script>
+</body>
+</html>

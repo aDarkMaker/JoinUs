@@ -4,6 +4,7 @@ import cssInjectedByJsPlugin from 'vite-plugin-css-injected-by-js';
 import dts from 'vite-plugin-dts';
 
 export default defineConfig({
+	publicDir: 'public',
 	build: {
 		lib: {
 			entry: resolve(__dirname, 'src/index.ts'),
@@ -12,25 +13,19 @@ export default defineConfig({
 			formats: ['es', 'umd'],
 		},
 		rollupOptions: {
-			// 外部依赖 - 这些不会打包进库，用户需要自行安装
 			external: [],
 			output: {
-				// 全局变量映射（UMD 用）
 				globals: {},
-				// CSS 文件名
-				assetFileNames: (assetInfo) => {
-					if (assetInfo.name === 'style.css') return 'joinus.css';
-					return assetInfo.name || 'asset[extname]';
-				},
 			},
 		},
-		// 是否生成 sourcemap
 		sourcemap: true,
-		// 清空输出目录
 		emptyOutDir: true,
+		cssCodeSplit: false,
 	},
 	plugins: [
-		cssInjectedByJsPlugin(),
+		cssInjectedByJsPlugin({
+			styleId: 'joinus-styles',
+		}),
 		dts({
 			insertTypesEntry: true,
 			outDir: 'dist',

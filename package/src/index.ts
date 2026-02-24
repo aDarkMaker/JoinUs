@@ -1,19 +1,29 @@
-// JoinUs Form Library - 招新报名表单组件库
+import '../public/theme.css';
 
-// 核心表单渲染
+function ensureRemixIcon(): void {
+	if (typeof document === 'undefined') return;
+	const id = 'joinus-remixicon';
+	if (document.getElementById(id)) return;
+	try {
+		const base = import.meta.url.replace(/\/[^/]+$/, '');
+		const link = document.createElement('link');
+		link.id = id;
+		link.rel = 'stylesheet';
+		link.href = `${base}/remixicon/remixicon.css`;
+		document.head.appendChild(link);
+	} catch {}
+}
+
 export { renderForm } from './form.js';
 export type { FormConfig, Question, ShowWhen } from './form.js';
 
-// 主题配置
 export { applyTheme, themes, themeYellow } from './config.js';
 export type { ThemeConfig } from './config.js';
 
-// 完整页面初始化（向后兼容，可直接使用）
 export { default as initPage } from './main.js';
 
 /**
- * 快速初始化 - 根据 DOM 自动初始化
- * 适用于直接引入 JS 文件的场景
+ * Auto-init when .joinus-root exists in DOM
  */
 export function autoInit(): void {
 	if (typeof document !== 'undefined') {
@@ -24,8 +34,8 @@ export function autoInit(): void {
 	}
 }
 
-// 如果直接引入，自动初始化
 if (typeof window !== 'undefined') {
+	ensureRemixIcon();
 	if (document.readyState === 'loading') {
 		document.addEventListener('DOMContentLoaded', autoInit);
 	} else {

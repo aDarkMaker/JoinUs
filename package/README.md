@@ -373,7 +373,7 @@ Contributions are welcome! Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for g
 
 ## License
 
-MIT © [orangelan](https://github.com/orangelan)
+MIT © [aDarkMaker](https://github.com/aDarkMaker)
 
 ---
 

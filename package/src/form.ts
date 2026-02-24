@@ -20,6 +20,7 @@ export interface Question {
 
 export interface FormConfig {
 	title: string;
+	description?: string;
 	subtitle?: string;
 	welcome?: string;
 	theme?: string;
@@ -385,6 +386,49 @@ export function renderForm(container: HTMLElement | string, config: FormConfig):
 	if (!(el instanceof HTMLElement)) {
 		throw new Error('renderForm: container must be a valid HTMLElement or CSS selector string');
 	}
+
+	const root = document.createElement('div');
+	root.className = 'joinus-root';
+
+	const content = document.createElement('div');
+	content.className = 'joinus-content';
+
+	const welcomeText = config.description || config.welcome;
+	if (config.title || config.subtitle || welcomeText) {
+		const header = document.createElement('div');
+		header.className = 'joinus-header';
+
+		if (config.title) {
+			const title = document.createElement('h1');
+			title.className = 'joinus-title';
+			title.textContent = config.title;
+			header.appendChild(title);
+
+			const line = document.createElement('div');
+			line.className = 'joinus-title-line';
+			header.appendChild(line);
+		}
+
+		if (config.subtitle) {
+			const subtitle = document.createElement('p');
+			subtitle.className = 'joinus-subtitle';
+			subtitle.textContent = config.subtitle;
+			header.appendChild(subtitle);
+		}
+
+		if (welcomeText) {
+			const welcome = document.createElement('div');
+			welcome.className = 'joinus-welcome';
+			welcome.innerHTML = welcomeText.replace(/\n/g, '<br>');
+			header.appendChild(welcome);
+		}
+
+		content.appendChild(header);
+	}
+
+	const card = document.createElement('div');
+	card.className = 'joinus-card';
+
 	const form = document.createElement('form');
 	form.action = config.submit?.url ?? '#';
 	form.method = 'POST';
@@ -414,10 +458,10 @@ export function renderForm(container: HTMLElement | string, config: FormConfig):
 	successEl.className = 'joinus-success joinus-success-hidden';
 	const s = config.submit ?? {};
 	successEl.innerHTML = `
-		<h2 class="joinus-success-title">${escapeHtml(s.successTitle ?? '真是个明智的选择！')}</h2>
-		<p class="joinus-success-subtitle">${escapeHtml(s.successSubtitle ?? '期待我们的相遇')}</p>
-		<p class="joinus-success-note">${escapeHtml(s.successNote ?? '注意查收短信，不要错过哦')}</p>
-		<a href="${escapeHtml(s.successBackUrl ?? 'https://huaxiaoke.com')}" class="joinus-btn joinus-success-back">${escapeHtml(s.successBackLabel ?? '返回')}</a>
+		<h2 class="joinus-success-title">${escapeHtml(s.successTitle ?? '提交成功！')}</h2>
+		<p class="joinus-success-subtitle">${escapeHtml(s.successSubtitle ?? 'Thank you for your submission')}</p>
+		<p class="joinus-success-note">${escapeHtml(s.successNote ?? '')}</p>
+		${s.successBackUrl ? `<a href="${escapeHtml(s.successBackUrl)}" class="joinus-btn joinus-success-back">${escapeHtml(s.successBackLabel ?? 'Back')}</a>` : ''}
 	`;
 
 	function getSubmitUrl(): string | undefined {
@@ -486,7 +530,6 @@ export function renderForm(container: HTMLElement | string, config: FormConfig):
 		overlay.querySelector('.joinus-modal-cancel')?.addEventListener('click', close);
 		overlay.querySelector('.joinus-modal-overwrite')?.addEventListener('click', async () => {
 			close();
-			// 复用首次提交的 FormData，保证服务端查重能命中同一人
 			const data = new FormData();
 			for (const [key, value] of firstSubmitData.entries()) {
 				data.append(key, value);
@@ -505,8 +548,8 @@ export function renderForm(container: HTMLElement | string, config: FormConfig):
 				alert('提交失败: ' + (e instanceof Error ? e.message : String(e)));
 			}
 		});
-		const root = el?.closest('.joinus-root') ?? document.body;
-		root.appendChild(overlay);
+		const rootEl = card.closest('.joinus-root') ?? document.body;
+		rootEl.appendChild(overlay);
 		requestAnimationFrame(() => overlay.classList.add('joinus-modal-visible'));
 	}
 
@@ -543,8 +586,20 @@ export function renderForm(container: HTMLElement | string, config: FormConfig):
 		showSuccess();
 	});
 
-	el.appendChild(form);
-	el.appendChild(successEl);
+	card.appendChild(form);
+	card.appendChild(successEl);
+	content.appendChild(card);
+	root.appendChild(content);
+
+	el.innerHTML = '';
+	el.style.cssText = 'width:100%;min-height:100vh;margin:0;padding:0;';
+	el.appendChild(root);
+
+	if (config.theme && typeof config.theme === 'string') {
+		import('./config.js').then(({ themes, themeYellow, applyTheme }) => {
+			applyTheme(root, themes[config.theme as string] ?? themeYellow);
+		});
+	}
 }
 
 function escapeHtml(s: string): string {

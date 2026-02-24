@@ -206,7 +206,7 @@ async function handleFetch(req: Request): Promise<Response> {
 			const zip = new JSZip();
 			zip.file('报名表.xlsx', excelBuf);
 
-			// Attachments: one zip per person (named by "姓名"), only if submission has files.
+			// Attachments: one zip per person (named by name field), only if submission has files.
 			const nameCounts = new Map<string, number>();
 			for (let i = 0; i < submissions.length; i++) {
 				const row = submissions[i];

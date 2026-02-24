@@ -2,8 +2,7 @@ import { applyTheme, themes, themeYellow } from './config.js';
 import { renderForm, type FormConfig } from './form.js';
 
 /**
- * 初始化完整的 JoinUs 页面
- * 自动读取 DOM 中的 .joinus-root 元素并初始化表单
+ * Initialize JoinUs page from .joinus-root element
  */
 export default async function initPage(): Promise<void> {
 	const root = document.querySelector('.joinus-root') as HTMLElement | null;
@@ -46,7 +45,6 @@ export default async function initPage(): Promise<void> {
 	}
 }
 
-// 如果直接引入此文件，自动初始化
 if (typeof window !== 'undefined') {
 	const currentScript = document.currentScript;
 	if (currentScript instanceof HTMLScriptElement && import.meta.url === currentScript.src) {

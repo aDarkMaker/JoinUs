@@ -10,7 +10,6 @@ server/data/
 
 # Bun
 .bun/
-# 注：bun.lockb 建议提交，保证依赖版本一致
 
 # Vite
 .vite/
@@ -57,10 +56,9 @@ coverage/
 .eslintcache
 *.tsbuildinfo
 
-# 后端端口缓存，供前端 dev 自动匹配（先启后端再启前端）
 .backend-port
 
-# Optional: 本地调试/临时文件
+# Optional: local debug / temp files
 *.tmp
 *.temp
 .temp/
